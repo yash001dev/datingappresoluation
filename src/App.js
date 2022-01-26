@@ -11,6 +11,8 @@ function App() {
   const { isLoading, error, data } = useQuery("areaData", () =>
     axios.get("https://kyupid-api.vercel.app/api/areas")
   );
+  const combinedData = {};
+
   const {
     isLoading: isLoading2,
     error: error2,
@@ -18,9 +20,35 @@ function App() {
   } = useQuery("userData", () =>
     axios.get("https://kyupid-api.vercel.app/api/users")
   );
+
   useEffect(() => {
-    console.log("hello");
-  });
+    if (data2) {
+      data2.data.users.map((value) => {
+        combinedData[value.area_id] = {
+          male:
+            value.gender === "M" &&
+            (combinedData[value.area_id]?.male == undefined
+              ? 0
+              : combinedData[value.area_id]?.male) + 1,
+          female:
+            value.gender === "F" &&
+            (combinedData[value.area_id]?.female == undefined
+              ? 0
+              : combinedData[value.area_id]?.female) + 1,
+          pro_users:
+            value.is_pro_user === true &&
+            (combinedData[value.area_id]?.pro_users == undefined
+              ? 0
+              : combinedData[value.area_id]?.pro_users) + 1,
+          normal_users:
+            value.is_pro_user === false &&
+            (combinedData[value.area_id]?.normal_users == undefined
+              ? 0
+              : combinedData[value.area_id]?.normal_users) + 1,
+        };
+      });
+    }
+  }, [data2]);
 
   console.log("DATA:", data);
   console.log("ERROR:", error);
@@ -47,7 +75,6 @@ function App() {
             item[1],
             item[0],
           ]);
-          console.log("VALUE:", value.geometry.coordinates);
           return (
             <Polygon
               pathOptions={{
