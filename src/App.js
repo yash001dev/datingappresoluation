@@ -5,23 +5,17 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 
-// import {
-//   Chart as ChartJS,
-//   RadialLinearScale,
-//   ArcElement,
-//   Tooltip,
-//   Legend,
-// } from "chart.js";
-// import { PolarArea } from "react-chartjs-2";
-
-// eslint-disable-next-line no-unused-vars
 import { MapContainer, Marker, Polygon, Popup, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import _ from "lodash";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
-import { BallTriangle } from "react-loader-spinner";
+// import Pie from "./charts/pie";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+// import { Pie } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -36,6 +30,7 @@ function App() {
     axios.get("https://kyupid-api.vercel.app/api/areas")
   );
   const [combinedData, setCombinedData] = useState({});
+  const [revenueData, setRevenueData] = useState({});
 
   const polyRef = useRef();
 
@@ -47,35 +42,48 @@ function App() {
     axios.get("https://kyupid-api.vercel.app/api/users")
   );
 
+  function random_rgba() {
+    var o = Math.round,
+      r = Math.random,
+      s = 255;
+    return (
+      "rgba(" +
+      o(r() * s) +
+      "," +
+      o(r() * s) +
+      "," +
+      o(r() * s) +
+      "," +
+      r().toFixed(1) +
+      ")"
+    );
+  }
+
   useEffect(() => {
     if (data2) {
       let tempData = {};
       data2.data.users.map((value) => {
+        const newLocal = tempData[value.area_id]?.male === undefined;
+        const newLocal_2 = tempData[value.area_id]?.female == undefined;
+        const newLocal_3 = tempData[value.area_id]?.pro_users == undefined;
+        const newLocal_4 = tempData[value.area_id]?.normal_users == undefined;
         tempData[value.area_id] = {
           ...tempData[value.area_id],
           male:
             value.gender === "M"
-              ? (tempData[value.area_id]?.male == undefined
-                  ? 0
-                  : tempData[value.area_id]?.male) + 1
+              ? (newLocal ? 0 : tempData[value.area_id]?.male) + 1
               : tempData[value.area_id]?.male,
           female:
             value.gender === "F"
-              ? (tempData[value.area_id]?.female == undefined
-                  ? 0
-                  : tempData[value.area_id]?.female) + 1
+              ? (newLocal_2 ? 0 : tempData[value.area_id]?.female) + 1
               : tempData[value.area_id]?.female,
           pro_users:
             value.is_pro_user === true
-              ? (tempData[value.area_id]?.pro_users == undefined
-                  ? 0
-                  : tempData[value.area_id]?.pro_users) + 1
+              ? (newLocal_3 ? 0 : tempData[value.area_id]?.pro_users) + 1
               : tempData[value.area_id]?.pro_users,
           normal_users:
             value.is_pro_user === false
-              ? (tempData[value.area_id]?.normal_users == undefined
-                  ? 0
-                  : tempData[value.area_id]?.normal_users) + 1
+              ? (newLocal_4 ? 0 : tempData[value.area_id]?.normal_users) + 1
               : tempData[value.area_id]?.normal_users,
         };
         setCombinedData(_.clone(tempData));
@@ -93,13 +101,6 @@ function App() {
 
   return (
     <div className="App">
-      <BallTriangle
-        className="overlay"
-        height="100"
-        width="100"
-        color="grey"
-        ariaLabel="Loading your content"
-      />
       <h1>Welcome To Dating App Resolution</h1>
       <MapContainer
         style={{ height: "80vh" }}
