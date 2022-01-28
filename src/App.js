@@ -13,6 +13,7 @@ import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 // import Pie from "./charts/pie";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import PieChart from "./charts/pie";
 // import { Pie } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -33,6 +34,10 @@ function App() {
   const [revenueData, setRevenueData] = useState({});
 
   const polyRef = useRef();
+  let tempData = {
+    labels: [],
+    datasets: [{}],
+  };
 
   const {
     isLoading: isLoading2,
@@ -86,23 +91,59 @@ function App() {
               ? (newLocal_4 ? 0 : tempData[value.area_id]?.normal_users) + 1
               : tempData[value.area_id]?.normal_users,
         };
-        setCombinedData(_.clone(tempData));
+
         return null;
       });
+      setCombinedData(_.clone(tempData));
+      let tempData2 = {
+        labels: [],
+        datasets: [
+          {
+            label: "# of Revenue",
+            data: [],
+            backgroundColor: [],
+            borderColor: [],
+            borderWidth: 1,
+          },
+        ],
+      };
+      data?.data?.features.map((value) => {
+        let currentProperties = {};
+        currentProperties = combinedData[value?.properties.area_id];
+        tempData2 = {
+          labels: [...tempData2.labels, value?.properties?.name],
+          datasets: [
+            {
+              ...tempData2.datasets[0],
+              data: [
+                ...tempData2.datasets[0].data,
+                currentProperties?.pro_users,
+              ],
+              backgroundColor: [
+                ...tempData2.datasets[0].backgroundColor,
+                random_rgba(),
+              ],
+              borderColor: [
+                ...tempData2.datasets[0].borderColor,
+                random_rgba(),
+              ],
+            },
+          ],
+        };
+        return null;
+      });
+      setRevenueData(_.clone(tempData2));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data2]);
-
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-  console.log("LOADING:", isLoading);
-
-  console.log("DATA2:", data2);
-  console.log("ERROR2:", error2);
-  console.log("LOADING2:", isLoading2);
 
   return (
     <div className="App">
-      <h1>Welcome To Dating App Resolution</h1>
+      <div class="jumbotron">
+        <h1 class="display-4 text-center">Welcome to Dating App Resolution</h1>
+        <p class="lead text-center">Learn from insight.</p>
+      </div>
+
       <MapContainer
         style={{ height: "80vh" }}
         zoom={11}
@@ -120,6 +161,29 @@ function App() {
           ]);
 
           currentProperties = combinedData[value?.properties.area_id];
+          // tempData = {
+          //   ...tempData,
+          //   labels: [...tempData?.labels, value?.properties.area_name],
+          //   datasets: [
+          //     ...tempData.datasets,
+          //     {
+          //       label: "# of Revenue",
+          //       data: [
+          //         ...tempData.datasets[0].data,
+          //         currentProperties?.revenue,
+          //       ],
+          //       backgroundColor: [
+          //         ...tempData.datasets[0].backgroundColor,
+          //         random_rgba(),
+          //       ],
+          //       borderColor: [
+          //         ...tempData.datasets[0].borderColor,
+          //         random_rgba(),
+          //       ],
+          //       borderWidth: 1,
+          //     },
+          //   ],
+          // };
 
           return (
             <div key={coordinates}>
@@ -188,6 +252,15 @@ function App() {
           );
         })}
       </MapContainer>
+      <div className="container mb-5">
+        <h1 className="display-1 py-4">Charts</h1>
+        {revenueData?.labels?.length > 0 && (
+          <div className="row">
+            <div className="display-4">1. Revenue by Area</div>{" "}
+            <PieChart data={revenueData} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
