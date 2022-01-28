@@ -32,6 +32,7 @@ function App() {
   );
   const [combinedData, setCombinedData] = useState({});
   const [revenueData, setRevenueData] = useState({});
+  const [isRender, setIsRender] = useState(false);
 
   const polyRef = useRef();
   let tempData = {
@@ -43,8 +44,14 @@ function App() {
     isLoading: isLoading2,
     error: error2,
     data: data2,
-  } = useQuery("userData", () =>
-    axios.get("https://kyupid-api.vercel.app/api/users")
+  } = useQuery(
+    "userData",
+    () => axios.get("https://kyupid-api.vercel.app/api/users"),
+    {
+      onSuccess: (data) => {
+        setIsRender(true);
+      },
+    }
   );
 
   function random_rgba() {
@@ -65,7 +72,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (data2) {
+    if (data2 && isRender) {
       let tempData = {};
       data2.data.users.map((value) => {
         const newLocal = tempData[value.area_id]?.male === undefined;
@@ -95,28 +102,36 @@ function App() {
         return null;
       });
       setCombinedData(_.clone(tempData));
-      let tempData2 = {
-        labels: [],
-        datasets: [
-          {
-            label: "# of Revenue",
-            data: [],
-            backgroundColor: [],
-            borderColor: [],
-            borderWidth: 1,
-          },
-        ],
-      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data2]);
+
+  useEffect(() => {
+    let tempData2 = {
+      labels: [],
+      datasets: [
+        {
+          label: "# of Revenue",
+          data: [],
+          backgroundColor: [],
+          borderColor: [],
+          borderWidth: 1,
+        },
+      ],
+    };
+    if (data2 && isRender && combinedData) {
       data?.data?.features.map((value) => {
         let currentProperties = {};
-        currentProperties = combinedData[value?.properties.area_id];
+        currentProperties = _.cloneDeep(
+          combinedData[value?.properties.area_id]
+        );
         tempData2 = {
           labels: [...tempData2.labels, value?.properties?.name],
           datasets: [
             {
               ...tempData2.datasets[0],
               data: [
-                ...tempData2.datasets[0].data,
+                ...tempData2?.datasets[0]?.data,
                 currentProperties?.pro_users,
               ],
               backgroundColor: [
@@ -132,10 +147,9 @@ function App() {
         };
         return null;
       });
-      setRevenueData(_.clone(tempData2));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data2]);
+    setRevenueData(_.clone(tempData2));
+  }, [combinedData, data?.data?.features, data2, isRender]);
 
   return (
     <div className="App">
@@ -160,7 +174,9 @@ function App() {
             item[0],
           ]);
 
-          currentProperties = combinedData[value?.properties.area_id];
+          currentProperties = _.cloneDeep(
+            combinedData[value?.properties.area_id]
+          );
           // tempData = {
           //   ...tempData,
           //   labels: [...tempData?.labels, value?.properties.area_name],
