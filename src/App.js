@@ -136,16 +136,6 @@ function App() {
     }
   }, [data2]);
 
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-  console.log("LOADING:", isLoading);
-
-  console.log("REVENUE_DATA:", revenueData);
-
-  console.log("DATA2:", data2);
-  console.log("ERROR2:", error2);
-  console.log("LOADING2:", isLoading2);
-
   return (
     <div className="App">
       <div class="jumbotron">
@@ -193,7 +183,6 @@ function App() {
           //     },
           //   ],
           // };
-          console.log("tempData:", tempData);
 
           return (
             <div key={coordinates}>
