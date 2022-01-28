@@ -34,7 +34,10 @@ function App() {
   const [revenueData, setRevenueData] = useState({});
 
   const polyRef = useRef();
-  let tempData = {};
+  let tempData = {
+    labels: [],
+    datasets: [{}],
+  };
 
   const {
     isLoading: isLoading2,
@@ -88,15 +91,56 @@ function App() {
               ? (newLocal_4 ? 0 : tempData[value.area_id]?.normal_users) + 1
               : tempData[value.area_id]?.normal_users,
         };
-        setCombinedData(_.clone(tempData));
+
         return null;
       });
+      setCombinedData(_.clone(tempData));
+      let tempData2 = {
+        labels: [],
+        datasets: [
+          {
+            label: "# of Revenue",
+            data: [],
+            backgroundColor: [],
+            borderColor: [],
+            borderWidth: 1,
+          },
+        ],
+      };
+      data?.data?.features.map((value) => {
+        let currentProperties = {};
+        currentProperties = combinedData[value?.properties.area_id];
+        tempData2 = {
+          labels: [...tempData2.labels, value?.properties?.name],
+          datasets: [
+            {
+              ...tempData2.datasets[0],
+              data: [
+                ...tempData2.datasets[0].data,
+                currentProperties?.pro_users,
+              ],
+              backgroundColor: [
+                ...tempData2.datasets[0].backgroundColor,
+                random_rgba(),
+              ],
+              borderColor: [
+                ...tempData2.datasets[0].borderColor,
+                random_rgba(),
+              ],
+            },
+          ],
+        };
+        return null;
+      });
+      setRevenueData(_.clone(tempData2));
     }
   }, [data2]);
 
   console.log("DATA:", data);
   console.log("ERROR:", error);
   console.log("LOADING:", isLoading);
+
+  console.log("REVENUE_DATA:", revenueData);
 
   console.log("DATA2:", data2);
   console.log("ERROR2:", error2);
@@ -149,7 +193,7 @@ function App() {
           //     },
           //   ],
           // };
-          // console.log("tempData:", tempData);
+          console.log("tempData:", tempData);
 
           return (
             <div key={coordinates}>
@@ -220,9 +264,12 @@ function App() {
       </MapContainer>
       <div className="container mb-5">
         <h1 className="display-1 py-4">Charts</h1>
-        <div className="col-4">
-          <PieChart />
-        </div>
+        {revenueData?.labels?.length > 0 && (
+          <div className="row">
+            <div className="display-4">1. Revenue by Area</div>{" "}
+            <PieChart data={revenueData} />
+          </div>
+        )}
       </div>
     </div>
   );
