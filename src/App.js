@@ -13,6 +13,7 @@ import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 // import Pie from "./charts/pie";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import PieChart from "./charts/pie";
 // import { Pie } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -33,6 +34,7 @@ function App() {
   const [revenueData, setRevenueData] = useState({});
 
   const polyRef = useRef();
+  let tempData = {};
 
   const {
     isLoading: isLoading2,
@@ -102,7 +104,11 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Welcome To Dating App Resolution</h1>
+      <div class="jumbotron">
+        <h1 class="display-4 text-center">Welcome to Dating App Resolution</h1>
+        <p class="lead text-center">Learn from insight.</p>
+      </div>
+
       <MapContainer
         style={{ height: "80vh" }}
         zoom={11}
@@ -120,6 +126,30 @@ function App() {
           ]);
 
           currentProperties = combinedData[value?.properties.area_id];
+          // tempData = {
+          //   ...tempData,
+          //   labels: [...tempData?.labels, value?.properties.area_name],
+          //   datasets: [
+          //     ...tempData.datasets,
+          //     {
+          //       label: "# of Revenue",
+          //       data: [
+          //         ...tempData.datasets[0].data,
+          //         currentProperties?.revenue,
+          //       ],
+          //       backgroundColor: [
+          //         ...tempData.datasets[0].backgroundColor,
+          //         random_rgba(),
+          //       ],
+          //       borderColor: [
+          //         ...tempData.datasets[0].borderColor,
+          //         random_rgba(),
+          //       ],
+          //       borderWidth: 1,
+          //     },
+          //   ],
+          // };
+          // console.log("tempData:", tempData);
 
           return (
             <div key={coordinates}>
@@ -188,6 +218,12 @@ function App() {
           );
         })}
       </MapContainer>
+      <div className="container mb-5">
+        <h1 className="display-1 py-4">Charts</h1>
+        <div className="col-4">
+          <PieChart />
+        </div>
+      </div>
     </div>
   );
 }
