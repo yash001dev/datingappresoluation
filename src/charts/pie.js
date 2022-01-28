@@ -38,8 +38,8 @@ ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
 //   ],
 // };
 
-const PieChart = ({ data }) => {
-  return <PolarArea data={data} />;
+const PieChart = ({ data, loading }) => {
+  return <>{<PolarArea data={data} />}</>;
 };
 
 export default PieChart;
