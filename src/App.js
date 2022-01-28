@@ -134,6 +134,7 @@ function App() {
       });
       setRevenueData(_.clone(tempData2));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data2]);
 
   return (
