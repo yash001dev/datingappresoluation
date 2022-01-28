@@ -64,9 +64,9 @@ function App() {
       let tempData = {};
       data2.data.users.map((value) => {
         const newLocal = tempData[value.area_id]?.male === undefined;
-        const newLocal_2 = tempData[value.area_id]?.female == undefined;
-        const newLocal_3 = tempData[value.area_id]?.pro_users == undefined;
-        const newLocal_4 = tempData[value.area_id]?.normal_users == undefined;
+        const newLocal_2 = tempData[value.area_id]?.female === undefined;
+        const newLocal_3 = tempData[value.area_id]?.pro_users === undefined;
+        const newLocal_4 = tempData[value.area_id]?.normal_users === undefined;
         tempData[value.area_id] = {
           ...tempData[value.area_id],
           male:
@@ -87,6 +87,7 @@ function App() {
               : tempData[value.area_id]?.normal_users,
         };
         setCombinedData(_.clone(tempData));
+        return null;
       });
     }
   }, [data2]);
