@@ -73,7 +73,6 @@ function App() {
 
   useEffect(() => {
     if (data2 && isRender) {
-      console.log("DATA1 is changed");
       let tempData = {};
       data2.data.users.map((value) => {
         const newLocal = tempData[value.area_id]?.male === undefined;
@@ -120,7 +119,6 @@ function App() {
         },
       ],
     };
-    console.log("DATA2 is changed");
     if (data2 && isRender && combinedData) {
       data?.data?.features.map((value) => {
         let currentProperties = {};
@@ -150,7 +148,6 @@ function App() {
         return null;
       });
     }
-    // console.log("TEMP DATA 2", tempData2);
     setRevenueData(_.clone(tempData2));
   }, [combinedData, data?.data?.features, data2, isRender]);
 
