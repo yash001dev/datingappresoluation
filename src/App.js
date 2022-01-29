@@ -13,7 +13,10 @@ import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 // import Pie from "./charts/pie";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import PolarChart from "./charts/polar";
 import PieChart from "./charts/pie";
+import RadarChart from "./charts/radar";
+import { BarChart } from "./charts/bar";
 // import { Pie } from "react-chartjs-2";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -32,6 +35,10 @@ function App() {
   );
   const [combinedData, setCombinedData] = useState({});
   const [revenueData, setRevenueData] = useState({});
+  const [topFemaleArea, setTopFemaleArea] = useState({});
+  const [topMaleArea, setTopMaleArea] = useState({});
+  const [topFemaleRevenue, setTopFemaleRevenue] = useState({});
+  const [compareData, setCompareData] = useState({});
   const [isRender, setIsRender] = useState(false);
 
   const polyRef = useRef();
@@ -71,8 +78,91 @@ function App() {
     );
   }
 
+  const findAreaName = (area_id) => {
+    let labelValue = _.find(data.data.features, (feature) => {
+      // eslint-disable-next-line eqeqeq
+      if (feature.properties.area_id == area_id) {
+        return true;
+      }
+    });
+    return labelValue.properties.name;
+  };
+
+  const returnChartDataSet = (
+    dataSets,
+    parameter = "pro_users",
+    order = "desc",
+    length = 10,
+    mainLabels = "Top 10 Revenue Area",
+    secondParameter,
+    compareDataSet = false,
+    compareParams,
+    compareLabels
+  ) => {
+    debugger;
+    let array = Object.entries(dataSets).map((key) => {
+      let value = key[1];
+      return { key: key[0], ...value };
+    });
+    let sortedArray = _.orderBy(array, parameter, order).slice(0, length);
+    if (secondParameter) {
+      sortedArray = _.orderBy(sortedArray, secondParameter, order);
+    }
+
+    let labels = sortedArray.map((item) => findAreaName(item.key));
+    let paramData = sortedArray.map((item) => item[parameter]);
+    let paramData2;
+    if (compareDataSet && compareParams) {
+      paramData2 = sortedArray.map((item) => item[compareParams]);
+    }
+    let backgroundColor = paramData.map((item) => random_rgba());
+    let compileDataSet = () => {
+      if (compareDataSet && compareParams) {
+        // return {
+        //   datasets: [
+        //     {
+        //       label: mainLabels,
+        //       data: paramData,
+        //       backgroundColor: random_rgba(),
+        //     },
+        //     {
+        //       label: compareLabels,
+        //       data: paramData2,
+        //       backgroundColor: random_rgba(),
+        //     },
+        //   ],
+        // };
+        return [
+          {
+            label: mainLabels,
+            data: paramData,
+            backgroundColor: random_rgba(),
+          },
+          {
+            label: compareLabels,
+            data: paramData2,
+            backgroundColor: random_rgba(),
+          },
+        ];
+      } else {
+        return [
+          {
+            label: mainLabels,
+            data: _.cloneDeep(paramData),
+            backgroundColor: backgroundColor,
+            borderColor: backgroundColor,
+          },
+        ];
+      }
+    };
+    return {
+      labels: labels,
+      datasets: compileDataSet(),
+    };
+  };
+
   useEffect(() => {
-    if (data2 && isRender) {
+    if (data2) {
       let tempData = {};
       data2.data.users.map((value) => {
         const newLocal = tempData[value.area_id]?.male === undefined;
@@ -149,6 +239,50 @@ function App() {
       });
     }
     setRevenueData(_.clone(tempData2));
+    setTopFemaleArea(
+      returnChartDataSet(
+        combinedData,
+        "female",
+        "desc",
+        10,
+        "# Top 10 Female Users Area"
+      )
+    );
+    setTopMaleArea(
+      returnChartDataSet(
+        combinedData,
+        "male",
+        "desc",
+        10,
+        "# Top 10 Male Users Area"
+      )
+    );
+
+    setTopFemaleRevenue(
+      returnChartDataSet(
+        combinedData,
+        "pro_users",
+        "desc",
+        10,
+        "# Top 10 Lowest Female Users By Revenue",
+        "female"
+      )
+    );
+    setCompareData(
+      returnChartDataSet(
+        combinedData,
+        "pro_users",
+        "desc",
+        10,
+        "Revenue",
+        "",
+        true,
+        "male",
+        "Male"
+      )
+    );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [combinedData, data?.data?.features, data2, isRender]);
 
   return (
@@ -273,7 +407,43 @@ function App() {
         {revenueData?.labels?.length > 0 && (
           <div className="row">
             <div className="display-4">1. Revenue by Area</div>{" "}
-            <PieChart data={revenueData} />
+            <PolarChart data={revenueData} />
+          </div>
+        )}
+        <div className="row my-5">
+          {topFemaleArea?.labels?.length > 0 && (
+            <div className="col-12 col-md-6">
+              <h2 className="display-6 text-center">
+                2. Top 10 Most Female User Area
+              </h2>
+              <PieChart data={topFemaleArea} />
+            </div>
+          )}
+          {topMaleArea?.labels?.length > 0 && (
+            <div className="col-12 col-md-6">
+              <h2 className="display-6 text-center">
+                3. Top 10 Most Male User Area
+              </h2>
+              <PieChart data={topMaleArea} />
+            </div>
+          )}
+        </div>
+
+        {topFemaleRevenue?.labels?.length > 0 && (
+          <div className="row">
+            <div className="display-4 text-center">
+              4. Top 10 Female User Area By Revenue
+            </div>{" "}
+            <RadarChart data={topFemaleRevenue} />
+          </div>
+        )}
+
+        {compareData?.labels?.length > 0 && (
+          <div className="row">
+            <div className="display-4 text-center">
+              5. Top 10 Revenue v/s Male
+            </div>{" "}
+            <BarChart data={compareData} />
           </div>
         )}
       </div>
